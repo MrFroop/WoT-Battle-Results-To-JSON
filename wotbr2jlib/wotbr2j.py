@@ -1,7 +1,7 @@
-#################################################### 
-# World of Tanks Battle Results to JSON            # 
-# by Phalynx www.vbaddict.net                      # 
-#################################################### 
+####################################################
+# World of Tanks Battle Results to JSON            #
+# by Phalynx www.vbaddict.net                      #
+####################################################
 import struct, json, time, sys, zlib
 from itertools import izip
 import logging
@@ -12,54 +12,54 @@ LEGACY_VERSIONS_LENGTH = (50, 52, 60, 62, 68, 70, 74, 81, 84, 92, 117, 90, 89, 9
 LEGACY_VERSIONS = dict(((value, index+1) for index, value in enumerate(LEGACY_VERSIONS_LENGTH)))
 
 
-VEHICLE_DEVICE_TYPE_NAMES = ('engine', 
- 'ammoBay', 
- 'fuelTank', 
- 'radio', 
- 'track', 
- 'gun', 
- 'turretRotator', 
- 'surveyingDevice') 
-VEHICLE_TANKMAN_TYPE_NAMES = ('commander', 
- 'driver', 
- 'radioman', 
- 'gunner', 
- 'loader') 
+VEHICLE_DEVICE_TYPE_NAMES = ('engine',
+ 'ammoBay',
+ 'fuelTank',
+ 'radio',
+ 'track',
+ 'gun',
+ 'turretRotator',
+ 'surveyingDevice')
+VEHICLE_TANKMAN_TYPE_NAMES = ('commander',
+ 'driver',
+ 'radioman',
+ 'gunner',
+ 'loader')
 
 
-VEH_INTERACTION_DETAILS_LEGACY = ('spotted', 'killed', 'hits', 'he_hits', 'pierced', 'damageDealt', 'damageAssisted', 'crits', 'fire') 
-VEH_INTERACTION_DETAILS_INDICES_LEGACY = dict(((x[1], x[0]) for x in enumerate(VEH_INTERACTION_DETAILS_LEGACY))) 
-  
-VEH_INTERACTION_DETAILS = (('spotted', 'B', 1, 0), 
- ('deathReason', 'b', 10, -1), 
- ('hits', 'H', 65535, 0), 
- ('he_hits', 'H', 65535, 0), 
- ('pierced', 'H', 65535, 0), 
- ('damageDealt', 'H', 65535, 0), 
- ('damageAssistedTrack', 'H', 65535, 0), 
- ('damageAssistedRadio', 'H', 65535, 0), 
- ('crits', 'I', 4294967295L, 0), 
- ('fire', 'H', 65535, 0)) 
-VEH_INTERACTION_DETAILS_NAMES = [ x[0] for x in VEH_INTERACTION_DETAILS ] 
-VEH_INTERACTION_DETAILS_MAX_VALUES = dict(((x[0], x[2]) for x in VEH_INTERACTION_DETAILS)) 
-VEH_INTERACTION_DETAILS_INIT_VALUES = [ x[3] for x in VEH_INTERACTION_DETAILS ] 
-VEH_INTERACTION_DETAILS_LAYOUT = ''.join([ x[1] for x in VEH_INTERACTION_DETAILS ]) 
-VEH_INTERACTION_DETAILS_INDICES = dict(((x[1][0], x[0]) for x in enumerate(VEH_INTERACTION_DETAILS))) 
-  
-  
+VEH_INTERACTION_DETAILS_LEGACY = ('spotted', 'killed', 'hits', 'he_hits', 'pierced', 'damageDealt', 'damageAssisted', 'crits', 'fire')
+VEH_INTERACTION_DETAILS_INDICES_LEGACY = dict(((x[1], x[0]) for x in enumerate(VEH_INTERACTION_DETAILS_LEGACY)))
+
+VEH_INTERACTION_DETAILS = (('spotted', 'B', 1, 0),
+ ('deathReason', 'b', 10, -1),
+ ('hits', 'H', 65535, 0),
+ ('he_hits', 'H', 65535, 0),
+ ('pierced', 'H', 65535, 0),
+ ('damageDealt', 'H', 65535, 0),
+ ('damageAssistedTrack', 'H', 65535, 0),
+ ('damageAssistedRadio', 'H', 65535, 0),
+ ('crits', 'I', 4294967295L, 0),
+ ('fire', 'H', 65535, 0))
+VEH_INTERACTION_DETAILS_NAMES = [ x[0] for x in VEH_INTERACTION_DETAILS ]
+VEH_INTERACTION_DETAILS_MAX_VALUES = dict(((x[0], x[2]) for x in VEH_INTERACTION_DETAILS))
+VEH_INTERACTION_DETAILS_INIT_VALUES = [ x[3] for x in VEH_INTERACTION_DETAILS ]
+VEH_INTERACTION_DETAILS_LAYOUT = ''.join([ x[1] for x in VEH_INTERACTION_DETAILS ])
+VEH_INTERACTION_DETAILS_INDICES = dict(((x[1][0], x[0]) for x in enumerate(VEH_INTERACTION_DETAILS)))
+
+
 parser = dict()
 parser['version'] = "0.9.12"
 parser['name'] = 'http://www.vbaddict.net'
 parser['processingTime'] = int(time.mktime(time.localtime()))
-  
-def usage(): 
+
+def usage():
     print str(sys.argv[0]) + " battleresult.dat [options]"
     print 'Options:'
     print '-f Formats the JSON to be more human readable'
     print '-s Server Mode, disable writing of timestamp, enable logging'
-  
-  
-def main(): 
+
+
+def main():
 
     import sys, os
     global filename_source, filename_target, option_server, option_format, parser
@@ -120,7 +120,7 @@ def process(file):
         # parser['battleResultVersion'] = LEGACY_VERSIONS[len(battleResults[1])]
     # else:
     # Updates higher than v0.9.8 have to be identified using a list of new fields
-    parser['battleResultVersion'] = 18
+    parser['battleResultVersion'] = 19
 
     while parser['battleResultVersion']>0:
         logging.info("Processing Version: " + str(parser['battleResultVersion']))
@@ -137,11 +137,12 @@ def process(file):
     # 0.9.8 and higher
     if len(list(bresult['personal'].keys()))<10:
         for vehTypeCompDescr, ownResults in bresult['personal'].copy().iteritems():
-            if 'details' in ownResults:
-                ownResults['details'] = handleDetailsCrits(ownResults['details'])
+            if type(ownResults) is dict:
+                if 'details' in ownResults:
+                    ownResults['details'] = handleDetailsCrits(ownResults['details'])
 
-            for field in ('damageEventList', 'xpReplay', 'creditsReplay', 'tmenXPReplay', 'fortResourceReplay', 'goldReplay', 'freeXPReplay'):
-                ownResults[field] = None
+                for field in ('damageEventList', 'xpReplay', 'creditsReplay', 'tmenXPReplay', 'fortResourceReplay', 'goldReplay', 'freeXPReplay'):
+                    ownResults[field] = None
 
             bresult['personal'][vehTypeCompDescr] = ownResults
 
@@ -177,25 +178,32 @@ def prepareForJSON(bresult):
                 if vehTypeCompDescr == 'avatar':
                     if 'avatarDamageEventList' in bresult['personal'][vehTypeCompDescr]:
                         del bresult['personal'][vehTypeCompDescr]['avatarDamageEventList']
-                if 'club' in ownResults:
-                    if 'clubDossierPopUps' in ownResults['club']:
-                        oldClubDossier = ownResults['club']['clubDossierPopUps'].copy()
-                        ownResults['club']['clubDossierPopUps'] = dict()
-                        for achievement, amount in oldClubDossier.iteritems():
-                            bresult['personal'][vehTypeCompDescr]['club']['clubDossierPopUps'][str(list(achievement)[0]) + '-' + str(list(achievement)[1])] = amount
+                if ownResults is not None and 'club' in ownResults:
+                    if ownResults['club'] is not None:
+                        if 'club' in ownResults:
+                            if 'clubDossierPopUps' in ownResults['club']:
+                                oldClubDossier = ownResults['club']['clubDossierPopUps'].copy()
+                                ownResults['club']['clubDossierPopUps'] = dict()
+                                for achievement, amount in oldClubDossier.iteritems():
+                                    bresult['personal'][vehTypeCompDescr]['club']['clubDossierPopUps'][str(list(achievement)[0]) + '-' + str(list(achievement)[1])] = amount
 
             if len(bresult['personal'].copy())>1 and len(bresult['personal'].copy())<10 :
                 #printmessage("Version 15 DOUBLE: " + str(bresult['arenaUniqueID']), 1)
                 pass
             for vehTypeCompDescr, ownResults in bresult['personal'].copy().iteritems():
-                if 'details' in ownResults:
-                    newdetails = detailsDictToString(ownResults['details'])
-                    bresult['personal'][vehTypeCompDescr]['details'] = newdetails
+                if ownResults is not None:
+                    if 'details' in ownResults:
+                        newdetails = detailsDictToString(ownResults['details'])
+                        bresult['personal'][vehTypeCompDescr]['details'] = newdetails
 
     return bresult
 
 def detailsDictToString(mydict):
     mydictcopy = dict()
+
+    if not type(mydict) is dict:
+        return mydictcopy
+
     for key, value in mydict.iteritems():
         value['vehicleid'] = key[0]
         value['typeCompDescr'] = key[1]
@@ -205,7 +213,7 @@ def detailsDictToString(mydict):
 
 
 
-def exitwitherror(message): 
+def exitwitherror(message):
     global parser
     logging.error(message)
     dossierheader = dict()
@@ -214,8 +222,8 @@ def exitwitherror(message):
     dossierheader['parser']['message'] = message
     dumpjson(dossierheader)
     sys.exit(1)
-  
-def dumpjson(bresult): 
+
+def dumpjson(bresult):
     global option_server, option_format, filename_target
     bresult = prepareForJSON(bresult)
 
@@ -232,21 +240,21 @@ def dumpjson(bresult):
     except Exception, e:
         exitwitherror("Exception: " + str(e))
 
-      
-def dictToList(indices, d): 
-    l = [None] * len(indices) 
-    for name, index in indices.iteritems(): 
-        l[index] = d[name] 
-  
-    return l 
-  
-  
-def listToDict(names, l): 
-    d = {} 
-    for x in enumerate(names): 
-        d[x[1]] = l[x[0]] 
-  
-    return d 
+
+def dictToList(indices, d):
+    l = [None] * len(indices)
+    for name, index in indices.iteritems():
+        l[index] = d[name]
+
+    return l
+
+
+def listToDict(names, l):
+    d = {}
+    for x in enumerate(names):
+        d[x[1]] = l[x[0]]
+
+    return d
 
 
 def print_array(oarray):
@@ -254,7 +262,7 @@ def print_array(oarray):
 
 
 
-def convertToFullForm(compactForm, battleResultVersion): 
+def convertToFullForm(compactForm, battleResultVersion):
     from SafeUnpickler import SafeUnpickler
 
     handled = 0
@@ -264,7 +272,7 @@ def convertToFullForm(compactForm, battleResultVersion):
     if len(battle_results_data.VEH_FULL_RESULTS)==0:
         exitwitherror("Unsupported Battle Result Version: " + str(battleResultVersion))
     else:
-        if battleResultVersion >= 18:
+        if battleResultVersion >= 19:
 
             arenaUniqueID, avatarResults, fullResultsList, pickled = compactForm
             fullResultsList = SafeUnpickler.loads(zlib.decompress(fullResultsList))
@@ -280,11 +288,12 @@ def convertToFullForm(compactForm, battleResultVersion):
                 personal['avatar'] = avatarResults = battle_results_data.AVATAR_FULL_RESULTS.unpack(avatarResults)
                 for vehTypeCompDescr, ownResults in fullResultsList.iteritems():
                     vehPersonal = personal[vehTypeCompDescr] = battle_results_data.VEH_FULL_RESULTS.unpack(ownResults)
-                    vehPersonal['details'] = battle_results_data.VehicleInteractionDetails.fromPacked(vehPersonal['details']).toDict()
-                    vehPersonal['isPrematureLeave'] = avatarResults['isPrematureLeave']
-                    vehPersonal['fairplayViolations'] = avatarResults['fairplayViolations']
-                    vehPersonal['club'] = avatarResults['club']
-                    vehPersonal['enemyClub'] = avatarResults['enemyClub']
+                    if type(vehPersonal) is dict:
+                        vehPersonal['details'] = battle_results_data.VehicleInteractionDetails.fromPacked(vehPersonal['details']).toDict()
+                        vehPersonal['isPrematureLeave'] = avatarResults['isPrematureLeave']
+                        vehPersonal['fairplayViolations'] = avatarResults['fairplayViolations']
+                        vehPersonal['club'] = avatarResults['club']
+                        vehPersonal['enemyClub'] = avatarResults['enemyClub']
 
                 commonAsList, playersAsList, vehiclesAsList, avatarsAsList = SafeUnpickler.loads(zlib.decompress(pickled))
                 fullForm['common'] = battle_results_data.COMMON_RESULTS.unpack(commonAsList)
@@ -305,7 +314,7 @@ def convertToFullForm(compactForm, battleResultVersion):
             except Exception, e:
                 exitwitherror("Error occured while transforming Battle Result Version: " + str(battleResultVersion) + " Error: " + str(e))
 
-        if battleResultVersion >= 17:
+        elif battleResultVersion >= 17:
 
             arenaUniqueID, avatarResults, fullResultsList, pickled = compactForm
             fullResultsList = SafeUnpickler.loads(zlib.decompress(fullResultsList))
@@ -409,7 +418,7 @@ def convertToFullForm(compactForm, battleResultVersion):
 
 def handleDetailsCrits(details):
 
-    if len(details)>0:
+    if type(details) is dict and len(details)>0:
         for vehicleid, detail_values in details.items():
             details[vehicleid]['critsDestroyedTankmenList'] = getDestroyedTankmen(detail_values)
             details[vehicleid]['critsCriticalDevicesList'] = getCriticalDevicesList(detail_values)
@@ -429,7 +438,7 @@ def getDestroyedTankmen(detail_values):
                 destroyedTankmenList.append(VEHICLE_TANKMAN_TYPE_NAMES[shift])
 
     return destroyedTankmenList
-  
+
 def getCriticalDevicesList(detail_values):
 
     criticalDevicesList = []
@@ -454,131 +463,131 @@ def getDestroyedDevicesList(detail_values):
                 destroyedDevicesList.append(VEHICLE_DEVICE_TYPE_NAMES[shift])
 
     return destroyedDevicesList
- 
-############################################################################################################################ 
+
+############################################################################################################################
 
 # Pre 98
-class _VehicleInteractionDetailsItem(object): 
-  
-    def __init__(self, values, offset): 
-        self.__values = values 
-        self.__offset = offset 
-  
-    def __getitem__(self, key): 
-        return self.__values[self.__offset + VEH_INTERACTION_DETAILS_INDICES[key]] 
-  
-    def __setitem__(self, key, value): 
-        self.__values[self.__offset + VEH_INTERACTION_DETAILS_INDICES[key]] = min(int(value), VEH_INTERACTION_DETAILS_MAX_VALUES[key]) 
-  
-    def __iter__(self): 
-        return izip(VEH_INTERACTION_DETAILS_NAMES, self.__values[self.__offset:]) 
-  
-  
-  
-class VehicleInteractionDetails(object): 
-  
-    def __init__(self, vehicleIDs, values): 
-        self.__vehicleIDs = vehicleIDs 
-        self.__values = values 
-        size = len(VEH_INTERACTION_DETAILS) 
-        self.__offsets = dict(((x[1], x[0] * size) for x in enumerate(self.__vehicleIDs))) 
-  
+class _VehicleInteractionDetailsItem(object):
+
+    def __init__(self, values, offset):
+        self.__values = values
+        self.__offset = offset
+
+    def __getitem__(self, key):
+        return self.__values[self.__offset + VEH_INTERACTION_DETAILS_INDICES[key]]
+
+    def __setitem__(self, key, value):
+        self.__values[self.__offset + VEH_INTERACTION_DETAILS_INDICES[key]] = min(int(value), VEH_INTERACTION_DETAILS_MAX_VALUES[key])
+
+    def __iter__(self):
+        return izip(VEH_INTERACTION_DETAILS_NAMES, self.__values[self.__offset:])
+
+
+
+class VehicleInteractionDetails(object):
+
+    def __init__(self, vehicleIDs, values):
+        self.__vehicleIDs = vehicleIDs
+        self.__values = values
+        size = len(VEH_INTERACTION_DETAILS)
+        self.__offsets = dict(((x[1], x[0] * size) for x in enumerate(self.__vehicleIDs)))
+
     @staticmethod
-    def fromPacked(packed): 
-        count = len(packed) / struct.calcsize(''.join(['<I', VEH_INTERACTION_DETAILS_LAYOUT])) 
-        packedVehIDsLayout = '<%dI' % (count,) 
-        packedVehIDsLen = struct.calcsize(packedVehIDsLayout) 
-        vehicleIDs = struct.unpack(packedVehIDsLayout, packed[:packedVehIDsLen]) 
-        values = struct.unpack('<' + VEH_INTERACTION_DETAILS_LAYOUT * count, packed[packedVehIDsLen:]) 
-        return VehicleInteractionDetails(vehicleIDs, values) 
-  
-    def __getitem__(self, vehicleID): 
-        offset = self.__offsets.get(vehicleID, None) 
-        if offset is None: 
-            self.__vehicleIDs.append(vehicleID) 
-            offset = len(self.__values) 
-            self.__values += VEH_INTERACTION_DETAILS_INIT_VALUES 
-  
-            self.__offsets[vehicleID] = offset 
-        return _VehicleInteractionDetailsItem(self.__values, offset) 
-  
-    def __contains__(self, vehicleID): 
-        return vehicleID in self.__offsets 
-  
-    def __str__(self): 
-        return str(self.toDict()) 
-  
-    def pack(self): 
-        count = len(self.__vehicleIDs) 
-        packed = struct.pack(('<%dI' % count), *self.__vehicleIDs) + struct.pack(('<' + VEH_INTERACTION_DETAILS_LAYOUT * count), *self.__values) 
-  
-        return packed 
-  
-    def toDict(self): 
-        return dict([ (vehID, dict(_VehicleInteractionDetailsItem(self.__values, offset))) for vehID, offset in self.__offsets.iteritems() ]) 
-  
-class _VehicleInteractionDetailsItem_LEGACY(object): 
-  
-    def __init__(self, values, offset): 
-        self.__values = values 
-        self.__offset = offset 
-  
-    def __getitem__(self, key): 
-        return self.__values[self.__offset + VEH_INTERACTION_DETAILS_INDICES_LEGACY[key]] 
-  
-    def __setitem__(self, key, value): 
-        self.__values[self.__offset + VEH_INTERACTION_DETAILS_INDICES_LEGACY[key]] = min(int(value), 65535) 
-  
-    def __str__(self): 
-        return str(dict(self)) 
-  
-    def __iter__(self): 
-        return izip(VEH_INTERACTION_DETAILS_LEGACY, self.__values[self.__offset:]) 
-  
-  
-class VehicleInteractionDetails_LEGACY(object): 
-  
-    def __init__(self, vehicleIDs, values): 
-        self.__vehicleIDs = vehicleIDs 
-        self.__values = values 
-        size = len(VEH_INTERACTION_DETAILS_LEGACY) 
-        self.__offsets = dict(((x[1], x[0] * size) for x in enumerate(self.__vehicleIDs))) 
-  
+    def fromPacked(packed):
+        count = len(packed) / struct.calcsize(''.join(['<I', VEH_INTERACTION_DETAILS_LAYOUT]))
+        packedVehIDsLayout = '<%dI' % (count,)
+        packedVehIDsLen = struct.calcsize(packedVehIDsLayout)
+        vehicleIDs = struct.unpack(packedVehIDsLayout, packed[:packedVehIDsLen])
+        values = struct.unpack('<' + VEH_INTERACTION_DETAILS_LAYOUT * count, packed[packedVehIDsLen:])
+        return VehicleInteractionDetails(vehicleIDs, values)
+
+    def __getitem__(self, vehicleID):
+        offset = self.__offsets.get(vehicleID, None)
+        if offset is None:
+            self.__vehicleIDs.append(vehicleID)
+            offset = len(self.__values)
+            self.__values += VEH_INTERACTION_DETAILS_INIT_VALUES
+
+            self.__offsets[vehicleID] = offset
+        return _VehicleInteractionDetailsItem(self.__values, offset)
+
+    def __contains__(self, vehicleID):
+        return vehicleID in self.__offsets
+
+    def __str__(self):
+        return str(self.toDict())
+
+    def pack(self):
+        count = len(self.__vehicleIDs)
+        packed = struct.pack(('<%dI' % count), *self.__vehicleIDs) + struct.pack(('<' + VEH_INTERACTION_DETAILS_LAYOUT * count), *self.__values)
+
+        return packed
+
+    def toDict(self):
+        return dict([ (vehID, dict(_VehicleInteractionDetailsItem(self.__values, offset))) for vehID, offset in self.__offsets.iteritems() ])
+
+class _VehicleInteractionDetailsItem_LEGACY(object):
+
+    def __init__(self, values, offset):
+        self.__values = values
+        self.__offset = offset
+
+    def __getitem__(self, key):
+        return self.__values[self.__offset + VEH_INTERACTION_DETAILS_INDICES_LEGACY[key]]
+
+    def __setitem__(self, key, value):
+        self.__values[self.__offset + VEH_INTERACTION_DETAILS_INDICES_LEGACY[key]] = min(int(value), 65535)
+
+    def __str__(self):
+        return str(dict(self))
+
+    def __iter__(self):
+        return izip(VEH_INTERACTION_DETAILS_LEGACY, self.__values[self.__offset:])
+
+
+class VehicleInteractionDetails_LEGACY(object):
+
+    def __init__(self, vehicleIDs, values):
+        self.__vehicleIDs = vehicleIDs
+        self.__values = values
+        size = len(VEH_INTERACTION_DETAILS_LEGACY)
+        self.__offsets = dict(((x[1], x[0] * size) for x in enumerate(self.__vehicleIDs)))
+
     @staticmethod
-    def fromPacked(packed): 
-        size = len(VEH_INTERACTION_DETAILS_LEGACY) 
-        count = len(packed) / struct.calcsize('I%dH' % size) 
-        unpacked = struct.unpack('%dI%dH' % (count, count * size), packed) 
-        vehicleIDs = unpacked[:count] 
-        values = unpacked[count:] 
-        return VehicleInteractionDetails_LEGACY(vehicleIDs, values) 
-  
-    def __getitem__(self, vehicleID): 
-        offset = self.__offsets.get(vehicleID, None) 
-        if offset is None: 
-            self.__vehicleIDs.append(vehicleID) 
-            offset = len(self.__values) 
-            size = len(VEH_INTERACTION_DETAILS_LEGACY) 
-            self.__values += [0] * size 
-            self.__offsets[vehicleID] = offset 
-        return _VehicleInteractionDetailsItem_LEGACY(self.__values, offset) 
-  
-    def __contains__(self, vehicleID): 
-        return vehicleID in self.__offsets 
-  
-    def __str__(self): 
-        return str(self.toDict()) 
-  
-    def pack(self): 
-        count = len(self.__vehicleIDs) 
-        size = len(VEH_INTERACTION_DETAILS_LEGACY) 
-        packed = struct.pack(('%dI' % count), *self.__vehicleIDs) + struct.pack(('%dH' % count * size), *self.__values) 
-        return packed 
-  
-    def toDict(self): 
-        return dict([ (vehID, dict(_VehicleInteractionDetailsItem_LEGACY(self.__values, offset))) for vehID, offset in self.__offsets.iteritems() ]) 
-  
-  
-  
-if __name__ == '__main__': 
-    main() 
+    def fromPacked(packed):
+        size = len(VEH_INTERACTION_DETAILS_LEGACY)
+        count = len(packed) / struct.calcsize('I%dH' % size)
+        unpacked = struct.unpack('%dI%dH' % (count, count * size), packed)
+        vehicleIDs = unpacked[:count]
+        values = unpacked[count:]
+        return VehicleInteractionDetails_LEGACY(vehicleIDs, values)
+
+    def __getitem__(self, vehicleID):
+        offset = self.__offsets.get(vehicleID, None)
+        if offset is None:
+            self.__vehicleIDs.append(vehicleID)
+            offset = len(self.__values)
+            size = len(VEH_INTERACTION_DETAILS_LEGACY)
+            self.__values += [0] * size
+            self.__offsets[vehicleID] = offset
+        return _VehicleInteractionDetailsItem_LEGACY(self.__values, offset)
+
+    def __contains__(self, vehicleID):
+        return vehicleID in self.__offsets
+
+    def __str__(self):
+        return str(self.toDict())
+
+    def pack(self):
+        count = len(self.__vehicleIDs)
+        size = len(VEH_INTERACTION_DETAILS_LEGACY)
+        packed = struct.pack(('%dI' % count), *self.__vehicleIDs) + struct.pack(('%dH' % count * size), *self.__values)
+        return packed
+
+    def toDict(self):
+        return dict([ (vehID, dict(_VehicleInteractionDetailsItem_LEGACY(self.__values, offset))) for vehID, offset in self.__offsets.iteritems() ])
+
+
+
+if __name__ == '__main__':
+    main()
