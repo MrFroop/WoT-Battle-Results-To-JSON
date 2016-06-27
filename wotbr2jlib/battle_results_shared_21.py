@@ -1,6 +1,7 @@
+
 import struct
 from itertools import izip
-from dictpackers_18 import *
+from dictpackers_20 import *
 
 class FLAG_ACTION:
     PICKED_UP_FROM_BASE = 0
@@ -42,6 +43,20 @@ VEH_INTERACTION_DETAILS_MAX_VALUES = dict(((x[0], x[2]) for x in VEH_INTERACTION
 VEH_INTERACTION_DETAILS_INIT_VALUES = [ x[3] for x in VEH_INTERACTION_DETAILS ]
 VEH_INTERACTION_DETAILS_LAYOUT = ''.join([ x[1] for x in VEH_INTERACTION_DETAILS ])
 VEH_INTERACTION_DETAILS_INDICES = dict(((x[1][0], x[0]) for x in enumerate(VEH_INTERACTION_DETAILS)))
+
+def _buildMapsForExt(*fields):
+    return (Meta(*fields), tuple(((v[0], v[2]) for v in fields)), {v[0]:i for i, v in enumerate(fields)})
+
+
+VEH_CELL_RESULTS_EXTS = {'extPublic': {'example': _buildMapsForExt(('stat1',
+                           int,
+                           0,
+                           None,
+                           'sum'), ('stat2',
+                           int,
+                           0,
+                           None,
+                           'max'))}}
 _VEH_CELL_RESULTS_PUBLIC = Meta(('health',
  int,
  0,
@@ -202,7 +217,31 @@ _VEH_CELL_RESULTS_PUBLIC = Meta(('health',
  bool,
  False,
  None,
- 'max'))
+ 'max'), ('extPublic',
+ dict,
+ {},
+ BunchProxyPacker(VEH_CELL_RESULTS_EXTS['extPublic']),
+ 'joinExts'), ('firstGoalTime',
+ int,
+ 0,
+ None,
+ 'min'), ('firstAssistTime',
+ int,
+ 0,
+ None,
+ 'min'), ('numGoals',
+ int,
+ 0,
+ None,
+ 'sum'), ('numAssists',
+ int,
+ 0,
+ None,
+ 'sum'), ('numAutoGoals',
+ int,
+ 0,
+ None,
+ 'sum'))
 _VEH_CELL_RESULTS_PRIVATE = Meta(('repair',
  int,
  0,
@@ -265,10 +304,6 @@ _VEH_CELL_RESULTS_SERVER = Meta(('potentialDamageDealt',
  {},
  None,
  'sumByEackKey'), ('discloseShots',
- list,
- [],
- DeltaPacker(),
- 'extend'), ('guerrillaShots',
  list,
  [],
  DeltaPacker(),
@@ -371,6 +406,10 @@ _VEH_BASE_RESULTS_PUBLIC = Meta(('accountDBID',
  0,
  None,
  'any'), ('typeCompDescr',
+ int,
+ 0,
+ None,
+ 'skip'), ('index',
  int,
  0,
  None,
@@ -481,8 +520,8 @@ _VEH_BASE_RESULTS_SERVER = Meta(('spottedBeforeWeBecameSpotted',
  {},
  None,
  'any'), ('vehsByClass',
- list,
- [],
+ dict,
+ {},
  None,
  'any'))
 VEH_BASE_RESULTS = _VEH_CELL_RESULTS_PUBLIC + _VEH_BASE_RESULTS_PUBLIC + _VEH_CELL_RESULTS_PRIVATE + _VEH_BASE_RESULTS_PRIVATE + _VEH_CELL_RESULTS_SERVER + _VEH_BASE_RESULTS_SERVER
@@ -529,11 +568,7 @@ _AVATAR_BASE_PRIVATE_RESULTS = Meta(('accountDBID',
  bool,
  False,
  None,
- 'skip'), ('fairplayViolations',
- tuple,
- (0, 0, 0),
- None,
- 'skip'))
+ 'skip'), ('squadBonusInfo', None, None, None, 'skip'))
 _AVATAR_BASE_PUBLIC_RESULTS = Meta(('avatarDamaged',
  int,
  0,
@@ -541,6 +576,10 @@ _AVATAR_BASE_PUBLIC_RESULTS = Meta(('avatarDamaged',
  'skip'), ('totalDamaged',
  int,
  0,
+ None,
+ 'skip'), ('fairplayViolations',
+ tuple,
+ (0, 0, 0),
  None,
  'skip'))
 _AVATAR_FULL_RESULTS_PRIVATE = Meta(('questsProgress',
@@ -747,11 +786,19 @@ VEH_FULL_RESULTS_UPDATE = Meta(('originalCredits',
  int,
  0,
  None,
- 'skip'), ('premiumVehicleXP',
+ 'sum'), ('premiumVehicleXP',
  int,
  0,
  None,
  'sum'), ('premiumVehicleXPFactor10',
+ int,
+ 0,
+ None,
+ 'skip'), ('squadXP',
+ int,
+ 0,
+ None,
+ 'sum'), ('squadXPFactor100',
  int,
  0,
  None,
@@ -775,15 +822,15 @@ VEH_FULL_RESULTS_UPDATE = Meta(('originalCredits',
  int,
  0,
  None,
- 'any'), ('igrXPFactor10',
+ 'max'), ('igrXPFactor10',
  int,
  0,
  None,
- 'any'), ('aogasFactor10',
+ 'max'), ('aogasFactor10',
  int,
  0,
  None,
- 'any'), ('refSystemXPFactor10',
+ 'max'), ('refSystemXPFactor10',
  int,
  0,
  None,
@@ -1000,9 +1047,17 @@ COMMON_RESULTS = Meta(('arenaTypeID',
  dict,
  {},
  None,
+ 'skip'), ('footballScore',
+ tuple,
+ (0, 0),
+ None,
+ 'skip'), ('zonePercentage',
+ tuple,
+ (0, 0),
+ None,
  'skip'))
 
-VEH_INTERACTIVE_STATS = ('xp', 'damageDealt', 'capturePts', 'flagActions', 'winPoints', 'deathCount', 'resourceAbsorbed', 'stopRespawn', 'equipmentDamage', 'equipmentKills')
+VEH_INTERACTIVE_STATS = ('xp', 'damageDealt', 'capturePts', 'flagActions', 'winPoints', 'deathCount', 'resourceAbsorbed', 'stopRespawn', 'equipmentDamage', 'equipmentKills', 'goalsTimeLine', 'autoGoalsTimeLine', 'assistTimeLine')
 VEH_INTERACTIVE_STATS_INDICES = dict(((x[1], x[0]) for x in enumerate(VEH_INTERACTIVE_STATS)))
 AVATAR_PRIVATE_STATS = ('ragePoints',)
 AVATAR_PRIVATE_STATS_INDICES = dict(((x[1], x[0]) for x in enumerate(AVATAR_PRIVATE_STATS)))
@@ -1097,4 +1152,4 @@ class VehicleInteractionDetails(object):
         return packed
 
     def toDict(self):
-        return dict([ ((vehID, vehTypeCompDescr), dict(_VehicleInteractionDetailsItem(self.__values, offset))) for (vehID, vehTypeCompDescr), offset in self.__offsets.iteritems() ])
+        return dict([ ((vehID, vehIdx), dict(_VehicleInteractionDetailsItem(self.__values, offset))) for (vehID, vehIdx), offset in self.__offsets.iteritems() ])
