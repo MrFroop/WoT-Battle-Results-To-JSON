@@ -48,7 +48,7 @@ VEH_INTERACTION_DETAILS_INDICES = dict(((x[1][0], x[0]) for x in enumerate(VEH_I
 
 
 parser = dict()
-parser['version'] = "0.9.12"
+parser['version'] = "0.9.15.2"
 parser['name'] = 'http://www.vbaddict.net'
 parser['processingTime'] = int(time.mktime(time.localtime()))
 
@@ -120,7 +120,7 @@ def process(file):
         # parser['battleResultVersion'] = LEGACY_VERSIONS[len(battleResults[1])]
     # else:
     # Updates higher than v0.9.8 have to be identified using a list of new fields
-    parser['battleResultVersion'] = 21
+    parser['battleResultVersion'] = 22
 
     while parser['battleResultVersion']>0:
         logging.info("Processing Version: " + str(parser['battleResultVersion']))
@@ -178,6 +178,8 @@ def prepareForJSON(bresult):
                 if vehTypeCompDescr == 'avatar':
                     if 'avatarDamageEventList' in bresult['personal'][vehTypeCompDescr]:
                         del bresult['personal'][vehTypeCompDescr]['avatarDamageEventList']
+                    if 'squadBonusInfo' in bresult['personal'][vehTypeCompDescr]:
+                        del bresult['personal'][vehTypeCompDescr]['squadBonusInfo']
                 if ownResults is not None and 'club' in ownResults:
                     if ownResults['club'] is not None:
                         if 'club' in ownResults:
@@ -294,6 +296,47 @@ def convertToFullForm(compactForm, battleResultVersion):
                         vehPersonal['fairplayViolations'] = avatarResults['fairplayViolations']
                         vehPersonal['club'] = avatarResults['club']
                         vehPersonal['enemyClub'] = avatarResults['enemyClub']
+
+                commonAsList, playersAsList, vehiclesAsList, avatarsAsList = SafeUnpickler.loads(zlib.decompress(pickled))
+                fullForm['common'] = battle_results_data.COMMON_RESULTS.unpack(commonAsList)
+                for accountDBID, playerAsList in playersAsList.iteritems():
+                    fullForm['players'][accountDBID] = battle_results_data.PLAYER_INFO.unpack(playerAsList)
+
+                for accountDBID, avatarAsList in avatarsAsList.iteritems():
+                    fullForm['avatars'][accountDBID] = battle_results_data.AVATAR_PUBLIC_RESULTS.unpack(avatarAsList)
+
+                for vehicleID, vehiclesInfo in vehiclesAsList.iteritems():
+                    fullForm['vehicles'][vehicleID] = []
+                    for vehTypeCompDescr, vehicleInfo in vehiclesInfo.iteritems():
+                        fullForm['vehicles'][vehicleID].append(battle_results_data.VEH_PUBLIC_RESULTS.unpack(vehicleInfo))
+            except IndexError, i:
+                return 0, {}
+            except KeyError, i:
+                return 0, {}
+            except Exception, e:
+                exitwitherror("Error occured while transforming Battle Result Version: " + str(battleResultVersion) + " Error: " + str(e))
+
+        elif battleResultVersion >= 18:
+
+            arenaUniqueID, avatarResults, fullResultsList, pickled = compactForm
+            fullResultsList = SafeUnpickler.loads(zlib.decompress(fullResultsList))
+            avatarResults = SafeUnpickler.loads(zlib.decompress(avatarResults))
+            personal = {}
+            try:
+                fullForm = {'arenaUniqueID': arenaUniqueID,
+                'personal': personal,
+                'common': {},
+                'players': {},
+                'vehicles': {},
+                'avatars': {}}
+                personal['avatar'] = avatarResults = battle_results_data.AVATAR_FULL_RESULTS.unpack(avatarResults)
+                for vehTypeCompDescr, ownResults in fullResultsList.iteritems():
+                    vehPersonal = personal[vehTypeCompDescr] = battle_results_data.VEH_FULL_RESULTS.unpack(ownResults)
+                    vehPersonal['details'] = battle_results_data.VehicleInteractionDetails.fromPacked(vehPersonal['details']).toDict()
+                    vehPersonal['isPrematureLeave'] = avatarResults['isPrematureLeave']
+                    vehPersonal['fairplayViolations'] = avatarResults['fairplayViolations']
+                    vehPersonal['club'] = avatarResults['club']
+                    vehPersonal['enemyClub'] = avatarResults['enemyClub']
 
                 commonAsList, playersAsList, vehiclesAsList, avatarsAsList = SafeUnpickler.loads(zlib.decompress(pickled))
                 fullForm['common'] = battle_results_data.COMMON_RESULTS.unpack(commonAsList)
