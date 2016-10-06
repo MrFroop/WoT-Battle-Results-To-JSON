@@ -1,7 +1,26 @@
-# Embedded file name: scripts/common/battle_results_shared.py
 import struct
 from itertools import izip
-from dictpackers_21 import *
+from dictpackers_20 import *
+
+class FLAG_ACTION:
+    PICKED_UP_FROM_BASE = 0
+    PICKED_UP_FROM_GROUND = 1
+    CAPTURED = 2
+    RANGE = (PICKED_UP_FROM_BASE, PICKED_UP_FROM_GROUND, CAPTURED)
+	
+VEHICLE_DEVICE_TYPE_NAMES = ('engine',
+ 'ammoBay',
+ 'fuelTank',
+ 'radio',
+ 'track',
+ 'gun',
+ 'turretRotator',
+ 'surveyingDevice')
+VEHICLE_TANKMAN_TYPE_NAMES = ('commander',
+ 'driver',
+ 'radioman',
+ 'gunner',
+ 'loader')
 
 VEH_INTERACTION_DETAILS = (('spotted', 'B', 1, 0),
  ('deathReason', 'b', 10, -1),
@@ -201,7 +220,7 @@ _VEH_CELL_RESULTS_PUBLIC = Meta(('health',
  bool,
  False,
  None,
- 'max'), ('extPublic',
+  'max'), ('extPublic',
  dict,
  {},
  BunchProxyPacker(VEH_CELL_RESULTS_EXTS['extPublic']),
@@ -1012,7 +1031,7 @@ COMMON_RESULTS = Meta(('arenaTypeID',
  {},
  None,
  'skip'))
-raise not set(VEH_FULL_RESULTS.names()) & set(COMMON_RESULTS.names()) or AssertionError
+
 VEH_INTERACTIVE_STATS = ('xp', 'damageDealt', 'capturePts', 'flagActions', 'winPoints', 'deathCount', 'resourceAbsorbed', 'stopRespawn', 'equipmentDamage', 'equipmentKills')
 VEH_INTERACTIVE_STATS_INDICES = dict(((x[1], x[0]) for x in enumerate(VEH_INTERACTIVE_STATS)))
 AVATAR_PRIVATE_STATS = ('ragePoints',)
