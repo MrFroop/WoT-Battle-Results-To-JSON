@@ -120,7 +120,7 @@ def process(file):
         # parser['battleResultVersion'] = LEGACY_VERSIONS[len(battleResults[1])]
     # else:
     # Updates higher than v0.9.8 have to be identified using a list of new fields
-    parser['battleResultVersion'] = 23
+    parser['battleResultVersion'] = 24
 
     while parser['battleResultVersion']>0:
         logging.info("Processing Version: " + str(parser['battleResultVersion']))
@@ -181,7 +181,7 @@ def prepareForJSON(bresult):
                     if 'squadBonusInfo' in bresult['personal'][vehTypeCompDescr]:
                         del bresult['personal'][vehTypeCompDescr]['squadBonusInfo']
                 if ownResults is not None:
-                    if ownResults['club'] is not None:
+                    if 'club' in ownResults and ownResults['club'] is not None:
                         if 'club' in ownResults:
                             if 'clubDossierPopUps' in ownResults['club']:
                                 oldClubDossier = ownResults['club']['clubDossierPopUps'].copy()
@@ -272,7 +272,7 @@ def convertToFullForm(compactForm, battleResultVersion):
 
     handled = 0
     import importlib
-    battle_results_data = importlib.import_module('wotbr2jlib.battle_results_shared_' + str(battleResultVersion).zfill(2))
+    battle_results_data = importlib.import_module('battle_results_shared_' + str(battleResultVersion).zfill(2))
 
     if len(battle_results_data.VEH_FULL_RESULTS)==0:
         exitwitherror("Unsupported Battle Result Version: " + str(battleResultVersion))
