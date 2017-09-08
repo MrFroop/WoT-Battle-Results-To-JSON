@@ -277,7 +277,41 @@ def convertToFullForm(compactForm, battleResultVersion):
     if len(battle_results_data.VEH_FULL_RESULTS)==0:
         exitwitherror("Unsupported Battle Result Version: " + str(battleResultVersion))
     else:
-        if battleResultVersion >= 19:
+        if battleResultVersion >= 24:
+
+            arenaUniqueID, avatarResults, fullResultsList, pickled = compactForm
+            fullResultsList = SafeUnpickler.loads(zlib.decompress(fullResultsList))
+            avatarResults = SafeUnpickler.loads(zlib.decompress(avatarResults))
+            personal = {}
+            fullForm = {'arenaUniqueID': arenaUniqueID,
+             'personal': personal,
+             'common': {},
+             'players': {},
+             'vehicles': {},
+             'avatars': {}}
+            personal['avatar'] = avatarResults = battle_results_data.AVATAR_FULL_RESULTS.unpack(avatarResults)
+            for vehTypeCompDescr, ownResults in fullResultsList.iteritems():
+                ownResults[0] = 1226189367 # Override checksum
+                vehPersonal = personal[vehTypeCompDescr] = battle_results_data.VEH_FULL_RESULTS.unpack(ownResults)
+                if vehPersonal is None:
+                    continue
+                vehPersonal['details'] = battle_results_data.VehicleInteractionDetails.fromPacked(vehPersonal['details']).toDict()
+
+            commonAsList, playersAsList, vehiclesAsList, avatarsAsList = SafeUnpickler.loads(zlib.decompress(pickled))
+            fullForm['common'] = battle_results_data.COMMON_RESULTS.unpack(commonAsList)
+            for accountDBID, playerAsList in playersAsList.iteritems():
+                fullForm['players'][accountDBID] = battle_results_data.PLAYER_INFO.unpack(playerAsList)
+
+            for accountDBID, avatarAsList in avatarsAsList.iteritems():
+                fullForm['avatars'][accountDBID] = battle_results_data.AVATAR_PUBLIC_RESULTS.unpack(avatarAsList)
+
+            for vehicleID, vehiclesInfo in vehiclesAsList.iteritems():
+                fullForm['vehicles'][vehicleID] = []
+                for vehTypeCompDescr, vehicleInfo in vehiclesInfo.iteritems():
+                    vehicleInfo[0] = 63936846 # Override checksum
+                    fullForm['vehicles'][vehicleID].append(battle_results_data.VEH_PUBLIC_RESULTS.unpack(vehicleInfo))
+
+        elif battleResultVersion >= 19:
 
             arenaUniqueID, avatarResults, fullResultsList, pickled = compactForm
             fullResultsList = SafeUnpickler.loads(zlib.decompress(fullResultsList))
