@@ -1,6 +1,6 @@
 import struct
 from itertools import izip
-from dictpackers_18 import *
+from dictpackers_19 import *
 
 class FLAG_ACTION:
     PICKED_UP_FROM_BASE = 0
@@ -268,10 +268,6 @@ _VEH_CELL_RESULTS_SERVER = Meta(('potentialDamageDealt',
  list,
  [],
  DeltaPacker(),
- 'extend'), ('guerrillaShots',
- list,
- [],
- DeltaPacker(),
  'extend'), ('critsCount',
  int,
  0,
@@ -371,6 +367,10 @@ _VEH_BASE_RESULTS_PUBLIC = Meta(('accountDBID',
  0,
  None,
  'any'), ('typeCompDescr',
+ int,
+ 0,
+ None,
+ 'skip'), ('index',
  int,
  0,
  None,
@@ -747,7 +747,7 @@ VEH_FULL_RESULTS_UPDATE = Meta(('originalCredits',
  int,
  0,
  None,
- 'skip'), ('premiumVehicleXP',
+ 'sum'), ('premiumVehicleXP',
  int,
  0,
  None,
@@ -775,15 +775,15 @@ VEH_FULL_RESULTS_UPDATE = Meta(('originalCredits',
  int,
  0,
  None,
- 'any'), ('igrXPFactor10',
+ 'max'), ('igrXPFactor10',
  int,
  0,
  None,
- 'any'), ('aogasFactor10',
+ 'max'), ('aogasFactor10',
  int,
  0,
  None,
- 'any'), ('refSystemXPFactor10',
+ 'max'), ('refSystemXPFactor10',
  int,
  0,
  None,
@@ -1097,4 +1097,4 @@ class VehicleInteractionDetails(object):
         return packed
 
     def toDict(self):
-        return dict([ ((vehID, vehTypeCompDescr), dict(_VehicleInteractionDetailsItem(self.__values, offset))) for (vehID, vehTypeCompDescr), offset in self.__offsets.iteritems() ])
+        return dict([ ((vehID, vehIdx), dict(_VehicleInteractionDetailsItem(self.__values, offset))) for (vehID, vehIdx), offset in self.__offsets.iteritems() ])
